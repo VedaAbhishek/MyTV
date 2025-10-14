@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <title>Settings</title>
+  </head>
+  <body>
+    <h1>Settings</h1>
+    <a href="/vid">Back to MyTV</a>
+
+    <h2>Add Video</h2>
+    <form action="/settings/add" method="post">
+      Link: <input type="url" name="youtubeLink" required /><br />
+      Time: Duration:
+      <input type="number" name="durationInSeconds" required /><br />
+      <button>Add</button>
+    </form>
+
+    <h2>Schedule</h2>
+    <table border="1">
+    <tr>
+        <th>ID</th>
+        <th>Link</th>
+        <th>Duration</th>
+        <th>Delete</th>
+    <tr th:each="video : ${videos}">
+    <td th:text="${video.id}"></td>
+    <td>
+        <form th:action="@{/settings/update}" method="post">
+            <input type="hidden" name="id" th:value="${video.id}" />
+            <input type="url" name="youtubeLink" th:value="${video.youtubeLink}" required />
+    </td>
+    <td>
+        <input type="number" name="durationInSeconds" th:value="${video.durationInSeconds}" required />
+    </td>
+    <td>
+        <button type="submit">Update</button>
+        </form>
+    </td>
+    <td>
+        <form th:action="@{/settings/delete/{id}(id=${video.id})}" method="post">
+            <button>X</button>
+        </form>
+    </td>
+</tr>
+    </table>
+  </body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>YouTube TV</title>
+    <style>
+      body {
+        margin: 0;
+        background: black;
+        overflow: hidden;
+      }
+      iframe {
+        width: 100vw;
+        height: 100vh;
+        border: none;
+      }
+
+      .settings-link {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: white;
+        color: black;
+        padding: 10px 12px;
+        text-decoration: none;
+        border-radius: 8px;
+        font-family: Arial, sans-serif;
+        font-weight: bold;
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/settings" class="settings-link">Settings</a>
+    <iframe id="player" allow="autoplay; fullscreen"></iframe>
+
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      const videos = [[${videos}]].map(v => ({
+          link: v.youtubeLink,
+          duration: v.durationInSeconds * 1000 // convert seconds to milliseconds
+      }));
+
+      let i = 0;
+      const player = document.getElementById("player");
+
+      function playNext() {
+        if (i >= videos.length) {
+          player.remove();
+          const msg = document.createElement('div');
+          msg.style.color = 'white';
+          msg.style.fontSize = '32px';
+          msg.style.textAlign = 'center';
+          msg.style.marginTop = '20%';
+          msg.innerText = 'No Videos Scheduled';
+          document.body.appendChild(msg);
+          return;
+        }
+          player.src = videos[i].link + "?autoplay=1&mute=1";
+          const duration = videos[i].duration +2 ;
+          i++;
+          setTimeout(playNext, duration);
+      }
+
+      playNext();
+    </script>
+  </body>
+</html>
