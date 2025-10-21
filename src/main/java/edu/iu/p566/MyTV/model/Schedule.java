@@ -8,4 +8,6 @@ public class Schedule {
     private Long id;
     private String youtubeLink;
     private int durationInSeconds;
+    private String scheduledDate;
+    private String scheduledTime;
 }

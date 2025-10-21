@@ -13,8 +13,12 @@
         width: 100vw;
         height: 100vh;
         border: none;
+        display: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
       }
-
       .settings-link {
         position: fixed;
         top: 20px;
@@ -29,41 +33,91 @@
         font-weight: bold;
         font-size: 16px;
       }
+      .message {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 32px;
+        text-align: center;
+        z-index: 2;
+        transition: opacity 1s ease;
+      }
     </style>
   </head>
   <body>
     <a href="/settings" class="settings-link">Settings</a>
     <iframe id="player" allow="autoplay; fullscreen"></iframe>
+    <div id="message" class="message">No Videos Scheduled</div>
 
     <script th:inline="javascript">
       /*<![CDATA[*/
       const videos = [[${videos}]].map(v => ({
-          link: v.youtubeLink,
-          duration: v.durationInSeconds * 1000 // convert seconds to milliseconds
+        link: v.youtubeLink,
+        duration: v.durationInSeconds * 1000,
+        date: v.scheduledDate,
+        time: v.scheduledTime
       }));
 
-      let i = 0;
       const player = document.getElementById("player");
+      const msg = document.getElementById("message");
 
-      function playNext() {
-        if (i >= videos.length) {
-          player.remove();
-          const msg = document.createElement('div');
-          msg.style.color = 'white';
-          msg.style.fontSize = '32px';
-          msg.style.textAlign = 'center';
-          msg.style.marginTop = '20%';
-          msg.innerText = 'No Videos Scheduled';
-          document.body.appendChild(msg);
-          return;
-        }
-          player.src = videos[i].link + "?autoplay=1&mute=1";
-          const duration = videos[i].duration +2 ;
-          i++;
-          setTimeout(playNext, duration);
+      function isNow(video) {
+        const now = new Date();
+        const videoDateTime = new Date(video.date + "T" + video.time);
+        const diff = Math.abs(now - videoDateTime);
+        return diff < 1000;
       }
 
-      playNext();
+      let playing = false;
+
+      function checkSchedule() {
+        const now = new Date();
+        const current = videos.find(isNow);
+
+        if (current && !playing) {
+          playing = true;
+          msg.style.opacity = "0"; // fade out message
+          player.style.display = "block";
+          player.src = current.link + "?autoplay=1&mute=1";
+
+          // After video finishes
+          setTimeout(() => {
+            player.src = "";
+            player.style.display = "none";
+            msg.innerText = "No Videos Scheduled";
+            msg.style.opacity = "1";
+            playing = false;
+          }, current.duration + 2000);
+        }
+
+        if (!playing) {
+          const futureVideos = videos
+            .map(v => ({ ...v, timeObj: new Date(v.date + "T" + v.time) }))
+            .filter(v => v.timeObj > now)
+            .sort((a, b) => a.timeObj - b.timeObj);
+
+          if (futureVideos.length > 0) {
+            const next = futureVideos[0];
+            const diffMs = next.timeObj - now;
+            const totalSeconds = Math.floor(diffMs / 1000);
+            const mins = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+            const secs = String(totalSeconds % 60).padStart(2, "0");
+            msg.innerText = `Next video in ${mins}:${secs}`;
+            msg.style.opacity = "1";
+          } else {
+            msg.innerText = "No Videos Scheduled";
+            msg.style.opacity = "1";
+          }
+
+          player.style.display = "none";
+        }
+      }
+
+      checkSchedule();
+      setInterval(checkSchedule, 1000);
+      /*]]>*/
     </script>
   </body>
 </html>

@@ -10,38 +10,78 @@
     <h2>Add Video</h2>
     <form action="/settings/add" method="post">
       Link: <input type="url" name="youtubeLink" required /><br />
-      Time: Duration:
+      Duration (seconds):
       <input type="number" name="durationInSeconds" required /><br />
+
+      Date: <input type="date" name="scheduledDate" required /><br />
+      Time: <input type="time" name="scheduledTime" step="1" required /><br />
+
       <button>Add</button>
     </form>
 
     <h2>Schedule</h2>
     <table border="1">
-    <tr>
+      <tr>
         <th>ID</th>
         <th>Link</th>
         <th>Duration</th>
-        <th>Delete</th>
-    <tr th:each="video : ${videos}">
-    <td th:text="${video.id}"></td>
-    <td>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Actions</th>
+      </tr>
+      <tr th:each="video : ${videos}">
         <form th:action="@{/settings/update}" method="post">
-            <input type="hidden" name="id" th:value="${video.id}" />
-            <input type="url" name="youtubeLink" th:value="${video.youtubeLink}" required />
-    </td>
-    <td>
-        <input type="number" name="durationInSeconds" th:value="${video.durationInSeconds}" required />
-    </td>
-    <td>
-        <button type="submit">Update</button>
+          <td>
+            <input type="hidden" name="id" th:value="${video.id}" /><span
+              th:text="${video.id}"
+            ></span>
+          </td>
+          <td>
+            <input
+              type="url"
+              name="youtubeLink"
+              th:value="${video.youtubeLink}"
+              required
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              name="durationInSeconds"
+              th:value="${video.durationInSeconds}"
+              required
+            />
+          </td>
+
+          <td>
+            <input
+              type="date"
+              name="scheduledDate"
+              th:value="${video.scheduledDate}"
+              required
+            />
+          </td>
+          <td>
+            <input
+              type="time"
+              name="scheduledTime"
+              step="1"
+              th:value="${video.scheduledTime}"
+              required
+            />
+          </td>
+
+          <td><button type="submit">Update</button></td>
         </form>
-    </td>
-    <td>
-        <form th:action="@{/settings/delete/{id}(id=${video.id})}" method="post">
+        <td>
+          <form
+            th:action="@{/settings/delete/{id}(id=${video.id})}"
+            method="post"
+          >
             <button>X</button>
-        </form>
-    </td>
-</tr>
+          </form>
+        </td>
+      </tr>
     </table>
   </body>
 </html>
