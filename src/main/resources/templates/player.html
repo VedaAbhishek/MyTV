@@ -52,7 +52,6 @@
     <div id="message" class="message">No Videos Scheduled</div>
 
     <script th:inline="javascript">
-      /*<![CDATA[*/
       const videos = [[${videos}]].map(v => ({
         link: v.youtubeLink,
         duration: v.durationInSeconds * 1000,
@@ -62,37 +61,71 @@
 
       const player = document.getElementById("player");
       const msg = document.getElementById("message");
+      let playing = false;
 
       function isNow(video) {
         const now = new Date();
-        const videoDateTime = new Date(video.date + "T" + video.time);
-        const diff = Math.abs(now - videoDateTime);
-        return diff < 1000;
+        const start = new Date(video.date + "T" + video.time);
+        const end = new Date(start.getTime() + video.duration);
+        return now >= start && now <= end;
       }
-
-      let playing = false;
 
       function checkSchedule() {
         const now = new Date();
         const current = videos.find(isNow);
 
-        if (current && !playing) {
-          playing = true;
-          msg.style.opacity = "0"; // fade out message
-          player.style.display = "block";
-          player.src = current.link + "?autoplay=1&mute=1";
+        if (current) {
+          const startTime = new Date(current.date + "T" + current.time);
+          const endTime = new Date(startTime.getTime() + current.duration);
+          const remainingMs = endTime - now;
 
-          // After video finishes
-          setTimeout(() => {
-            player.src = "";
-            player.style.display = "none";
-            msg.innerText = "No Videos Scheduled";
-            msg.style.opacity = "1";
-            playing = false;
-          }, current.duration + 2000);
-        }
+          // --- Implementation control variables ---
+          const stored = JSON.parse(sessionStorage.getItem("currentVideo") || "{}");
+          const sameVideo = stored.link === current.link;
 
-        if (!playing) {
+          let startParam;
+
+          if (!sameVideo) {
+            // 🧩 Case 1: Fresh login (new session or different video)
+            // Always start from beginning (0)
+            startParam = 0;
+            sessionStorage.setItem(
+              "currentVideo",
+              JSON.stringify({ link: current.link, startedAt: now.toISOString() })
+            );
+          } else {
+            // 🧩 Case 2: Returning to same video after going to settings
+            // Continue according to real-time clock
+            const elapsedSeconds = Math.floor((now - startTime) / 1000);
+            startParam = elapsedSeconds > 0 ? elapsedSeconds : 0;
+          }
+
+          if (!playing) {
+            playing = true;
+            msg.style.opacity = "0";
+            player.style.display = "block";
+
+            player.src = `${current.link}?autoplay=1&mute=1&start=${startParam}`;
+
+            // Stop exactly at scheduled end time
+            setTimeout(() => {
+              player.src = "";
+              player.style.display = "none";
+              msg.innerText = "No Videos Scheduled";
+              msg.style.opacity = "1";
+              playing = false;
+              sessionStorage.removeItem("currentVideo");
+              checkSchedule();
+            }, remainingMs + 500);
+          }
+        } else {
+          // No current video
+          playing = false;
+          player.style.display = "none";
+          sessionStorage.removeItem("currentVideo");
+
+          // Show countdown to next video
+          const now = new Date();
           const futureVideos = videos
             .map(v => ({ ...v, timeObj: new Date(v.date + "T" + v.time) }))
             .filter(v => v.timeObj > now)
@@ -105,19 +138,15 @@
             const mins = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
             const secs = String(totalSeconds % 60).padStart(2, "0");
             msg.innerText = `Next video in ${mins}:${secs}`;
-            msg.style.opacity = "1";
           } else {
             msg.innerText = "No Videos Scheduled";
-            msg.style.opacity = "1";
           }
-
-          player.style.display = "none";
+          msg.style.opacity = "1";
         }
       }
 
       checkSchedule();
       setInterval(checkSchedule, 1000);
-      /*]]>*/
     </script>
   </body>
 </html>
