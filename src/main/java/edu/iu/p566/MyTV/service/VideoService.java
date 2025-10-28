@@ -1,5 +1,7 @@
 package edu.iu.p566.MyTV.service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -20,6 +22,9 @@ public class VideoService {
     }
 
     public void saveVideos(Schedule schedule) {
+        if (hasOverlap(schedule, false)) {
+            throw new IllegalArgumentException("Video schedule overlaps with another existing video.");
+        }
         schedule.setYoutubeLink(convertVideoLink(schedule.getYoutubeLink()));
         repo.save(schedule);
     }
@@ -29,6 +34,9 @@ public class VideoService {
     }
 
     public void updateVideo(Schedule schedule) {
+        if (hasOverlap(schedule, true)) {
+            throw new IllegalArgumentException("Video schedule overlaps with another existing video.");
+        }
         schedule.setYoutubeLink(convertVideoLink(schedule.getYoutubeLink()));
         repo.update(schedule);
     }
@@ -44,5 +52,29 @@ public class VideoService {
             return url.replace("youtu.be/", "youtube.com/embed/");
         }
         return url;
+    }
+
+    private boolean hasOverlap(Schedule newVideo, boolean isUpdate) {
+        List<Schedule> allVidoes = repo.findAll();
+
+        LocalTime start = LocalTime.parse(newVideo.getScheduledTime());
+        LocalTime end = start.plusSeconds(newVideo.getDurationInSeconds());
+
+        for (Schedule existing : allVidoes) {
+            if (isUpdate && existing.getId().equals(newVideo.getId()))
+                continue;
+
+            if (!existing.getScheduledDate().equals(newVideo.getScheduledDate()))
+                continue;
+
+            LocalTime existingStart = LocalTime.parse(existing.getScheduledTime());
+            LocalTime existingEnd = existingStart.plusSeconds(existing.getDurationInSeconds());
+
+            boolean overlap = start.isBefore(existingEnd) && end.isAfter(existingStart);
+            if (overlap)
+                return true;
+        }
+
+        return false;
     }
 }

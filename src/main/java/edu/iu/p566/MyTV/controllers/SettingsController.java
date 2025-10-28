@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import edu.iu.p566.MyTV.model.Schedule;
 import edu.iu.p566.MyTV.service.VideoService;
@@ -22,15 +23,23 @@ public class SettingsController {
     }
 
     @GetMapping()
-    public String settingsPage(Model model) {
+    public String settingsPage(Model model, @RequestParam(required = false) String error) {
         model.addAttribute("videos", videoService.getAllVideos());
+        if (error != null)
+            model.addAttribute("error", error);
         return "settings";
     }
 
     @PostMapping("/add")
-    public String addVideo(@ModelAttribute Schedule schedule) {
-        videoService.saveVideos(schedule);
-        return "redirect:/settings";
+    public String addVideo(@ModelAttribute Schedule schedule, Model model) {
+        try {
+            videoService.saveVideos(schedule);
+            return "redirect:/settings";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("videos", videoService.getAllVideos());
+            return "settings";
+        }
     }
 
     @PostMapping("/delete/{id}")
@@ -40,8 +49,14 @@ public class SettingsController {
     }
 
     @PostMapping("/update")
-    public String updateVideo(@ModelAttribute Schedule schedule) {
-        videoService.updateVideo(schedule);
-        return "redirect:/settings"; 
+    public String updateVideo(@ModelAttribute Schedule schedule, Model model) {
+        try {
+            videoService.updateVideo(schedule);
+            return "redirect:/settings";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("videos", videoService.getAllVideos());
+            return "settings";
+        }
     }
 }

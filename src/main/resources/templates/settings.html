@@ -5,6 +5,9 @@
   </head>
   <body>
     <h1>Settings</h1>
+    <div th:if="${error}" style="color: red; font-weight: bold">
+      <p th:text="${error}"></p>
+    </div>
     <a href="/vid">Back to MyTV</a>
 
     <h2>Add Video</h2>

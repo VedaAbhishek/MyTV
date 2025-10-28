@@ -79,23 +79,18 @@
           const endTime = new Date(startTime.getTime() + current.duration);
           const remainingMs = endTime - now;
 
-          // --- Implementation control variables ---
           const stored = JSON.parse(sessionStorage.getItem("currentVideo") || "{}");
           const sameVideo = stored.link === current.link;
 
           let startParam;
 
           if (!sameVideo) {
-            // 🧩 Case 1: Fresh login (new session or different video)
-            // Always start from beginning (0)
             startParam = 0;
             sessionStorage.setItem(
               "currentVideo",
               JSON.stringify({ link: current.link, startedAt: now.toISOString() })
             );
           } else {
-            // 🧩 Case 2: Returning to same video after going to settings
-            // Continue according to real-time clock
             const elapsedSeconds = Math.floor((now - startTime) / 1000);
             startParam = elapsedSeconds > 0 ? elapsedSeconds : 0;
           }
@@ -107,7 +102,6 @@
 
             player.src = `${current.link}?autoplay=1&mute=1&start=${startParam}`;
 
-            // Stop exactly at scheduled end time
             setTimeout(() => {
               player.src = "";
               player.style.display = "none";
@@ -119,12 +113,10 @@
             }, remainingMs + 500);
           }
         } else {
-          // No current video
           playing = false;
           player.style.display = "none";
           sessionStorage.removeItem("currentVideo");
 
-          // Show countdown to next video
           const now = new Date();
           const futureVideos = videos
             .map(v => ({ ...v, timeObj: new Date(v.date + "T" + v.time) }))
