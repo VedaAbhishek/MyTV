@@ -2,35 +2,124 @@
 <html xmlns:th="http://www.thymeleaf.org">
   <head>
     <title>Settings</title>
+    <style>
+      body {
+        background: #f4f6f8;
+        font-family: "Poppins", sans-serif;
+        color: #333;
+        padding: 40px;
+      }
+
+      h1 {
+        color: #222;
+        margin-bottom: 10px;
+      }
+
+      a {
+        display: inline-block;
+        margin-bottom: 20px;
+        text-decoration: none;
+        color: #fff;
+        background: #2196f3;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-weight: bold;
+        transition: background 0.3s;
+      }
+
+      a:hover {
+        background: #42a5f5;
+      }
+
+      form {
+        margin-bottom: 20px;
+      }
+
+      input,
+      button {
+        margin: 5px;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+      }
+
+      button {
+        background: #2196f3;
+        color: white;
+        border: none;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+
+      button:hover {
+        background: #42a5f5;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        text-align: center;
+      }
+
+      th {
+        background: #2196f3;
+        color: white;
+      }
+
+      tr:hover {
+        background: #f1faff;
+      }
+
+      .error {
+        color: #ff4b5c;
+        font-weight: bold;
+      }
+    </style>
   </head>
   <body>
     <h1>Settings</h1>
-    <div th:if="${error}" style="color: red; font-weight: bold">
-      <p th:text="${error}"></p>
-    </div>
-    <a href="/vid">Back to MyTV</a>
+    <div th:if="${error}" class="error" th:text="${error}"></div>
+    <a href="/vid">← Back to MyTV</a>
 
     <h2>Add Video</h2>
     <form action="/settings/add" method="post">
-      Link: <input type="url" name="youtubeLink" required /><br />
-      Duration (seconds):
-      <input type="number" name="durationInSeconds" required /><br />
-
-      Date: <input type="date" name="scheduledDate" required /><br />
-      Time: <input type="time" name="scheduledTime" step="1" required /><br />
-
+      <input
+        type="url"
+        name="youtubeLink"
+        placeholder="YouTube link"
+        required
+      />
+      <input
+        type="number"
+        name="durationInSeconds"
+        placeholder="Duration (seconds)"
+        required
+      />
+      <input type="date" name="scheduledDate" required />
+      <input type="time" name="scheduledTime" step="1" required />
       <button>Add</button>
     </form>
 
     <h2>Schedule</h2>
-    <table border="1">
+    <table>
       <tr>
         <th>ID</th>
         <th>Link</th>
         <th>Duration</th>
         <th>Date</th>
         <th>Time</th>
-        <th>Actions</th>
+        <th>Update</th>
+        <th>Delete</th>
       </tr>
       <tr th:each="video : ${videos}">
         <form th:action="@{/settings/update}" method="post">
@@ -55,7 +144,6 @@
               required
             />
           </td>
-
           <td>
             <input
               type="date"
@@ -73,7 +161,6 @@
               required
             />
           </td>
-
           <td><button type="submit">Update</button></td>
         </form>
         <td>
@@ -81,7 +168,7 @@
             th:action="@{/settings/delete/{id}(id=${video.id})}"
             method="post"
           >
-            <button>X</button>
+            <button style="background: #ff4b5c">X</button>
           </form>
         </td>
       </tr>
