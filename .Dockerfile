@@ -30,10 +30,10 @@ COPY MyTV.db /app/data/MyTV.db
 # Ensure the directory exists for SQLite
 RUN mkdir -p /app/data
 
-# Set environment variables (optional defaults)
-ENV SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/MyTV.db
-ENV SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.sqlite.JDBC
-ENV SERVER_PORT=8080
+# # Set environment variables (optional defaults)
+# ENV SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/MyTV.db
+# ENV SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.sqlite.JDBC
+# ENV SERVER_PORT=8080
 
 # Expose the application port
 EXPOSE 8080
