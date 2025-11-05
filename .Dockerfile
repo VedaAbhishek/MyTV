@@ -25,10 +25,10 @@ WORKDIR /app
 COPY --from=builder /app/target/*.jar app.jar
 
 # Copy SQLite database file into the container
-COPY MyTV.db /app/data/MyTV.db
+COPY MyTV.db /app/MyTV.db
 
 # Ensure the directory exists for SQLite
-RUN mkdir -p /app/data
+#RUN mkdir -p /app/data
 
 # # Set environment variables (optional defaults)
 # ENV SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/MyTV.db
